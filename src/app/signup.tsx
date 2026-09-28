@@ -1,11 +1,16 @@
 import { Image } from 'expo-image';
+
 import {
   useLocalSearchParams,
   useRouter,
 } from 'expo-router';
-import { useEffect, useState } from 'react';
+
 import {
-  Alert,
+  useEffect,
+  useState,
+} from 'react';
+
+import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,15 +19,19 @@ import {
   Text,
   View,
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthInput } from '../features/auth/components/AuthInput';
+
 import {
   isValidPhone,
   normalizePhoneInput,
 } from '../shared/lib/phone';
 
-type UserRole = 'customer' | 'contractor';
+type UserRole =
+  | 'customer'
+  | 'contractor';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -34,9 +43,15 @@ export default function SignUpScreen() {
   const [role, setRole] =
     useState<UserRole>('customer');
 
-  const [identity, setIdentity] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [identity, setIdentity] =
+    useState('');
+
+  const [phone, setPhone] =
+    useState('');
+
+  const [password, setPassword] =
+    useState('');
+
   const [
     passwordConfirmation,
     setPasswordConfirmation,
@@ -47,22 +62,30 @@ export default function SignUpScreen() {
     setHasAcceptedTerms,
   ] = useState(false);
 
-  const [identityError, setIdentityError] =
-    useState('');
+  const [
+    identityError,
+    setIdentityError,
+  ] = useState('');
 
-  const [phoneError, setPhoneError] =
-    useState('');
+  const [
+    phoneError,
+    setPhoneError,
+  ] = useState('');
 
-  const [passwordError, setPasswordError] =
-    useState('');
+  const [
+    passwordError,
+    setPasswordError,
+  ] = useState('');
 
   const [
     passwordConfirmationError,
     setPasswordConfirmationError,
   ] = useState('');
 
-  const [termsError, setTermsError] =
-    useState('');
+  const [
+    termsError,
+    setTermsError,
+  ] = useState('');
 
   useEffect(() => {
     setRole(
@@ -77,23 +100,37 @@ export default function SignUpScreen() {
       ? 'Регистрация для поиска техники'
       : 'Регистрация для поиска заказов';
 
-  const identityPlaceholder = 'Имя или компания';
+  const identityPlaceholder =
+    role === 'customer'
+      ? 'Имя или компания'
+      : 'Имя или название организации';
 
-  function selectRole(nextRole: UserRole) {
+  function selectRole(
+    nextRole: UserRole
+  ) {
     setRole(nextRole);
   }
 
-  function handleIdentityChange(value: string) {
+  function handleIdentityChange(
+    value: string
+  ) {
     setIdentity(value);
     setIdentityError('');
   }
 
-  function handlePhoneChange(value: string) {
-    setPhone(normalizePhoneInput(value));
+  function handlePhoneChange(
+    value: string
+  ) {
+    setPhone(
+      normalizePhoneInput(value)
+    );
+
     setPhoneError('');
   }
 
-  function handlePasswordChange(value: string) {
+  function handlePasswordChange(
+    value: string
+  ) {
     setPassword(value);
     setPasswordError('');
   }
@@ -102,11 +139,15 @@ export default function SignUpScreen() {
     value: string
   ) {
     setPasswordConfirmation(value);
+
     setPasswordConfirmationError('');
   }
 
   function toggleTerms() {
-    setHasAcceptedTerms((current) => !current);
+    setHasAcceptedTerms(
+      (current) => !current
+    );
+
     setTermsError('');
   }
 
@@ -117,25 +158,39 @@ export default function SignUpScreen() {
     setPasswordConfirmationError('');
     setTermsError('');
 
-    const normalizedIdentity = identity.trim();
-    const normalizedPhone = phone.trim();
+    const normalizedIdentity =
+      identity.trim();
+
+    const normalizedPhone =
+      phone.trim();
 
     let hasError = false;
 
     if (!normalizedIdentity) {
-      setIdentityError('Заполните поле');
+      setIdentityError(
+        'Заполните поле'
+      );
+
       hasError = true;
     }
 
-    if (!isValidPhone(normalizedPhone)) {
+    if (
+      !isValidPhone(
+        normalizedPhone
+      )
+    ) {
       setPhoneError(
         'Введите номер в формате +7 999 123-45-67'
       );
+
       hasError = true;
     }
 
     if (password.length < 8) {
-      setPasswordError('Минимум 8 символов');
+      setPasswordError(
+        'Минимум 8 символов'
+      );
+
       hasError = true;
     }
 
@@ -143,18 +198,24 @@ export default function SignUpScreen() {
       setPasswordConfirmationError(
         'Повторите пароль'
       );
+
       hasError = true;
     } else if (
-      password !== passwordConfirmation
+      password !==
+      passwordConfirmation
     ) {
       setPasswordConfirmationError(
         'Пароли не совпадают'
       );
+
       hasError = true;
     }
 
     if (!hasAcceptedTerms) {
-      setTermsError('Нужно принять условия');
+      setTermsError(
+        'Нужно принять условия'
+      );
+
       hasError = true;
     }
 
@@ -163,21 +224,19 @@ export default function SignUpScreen() {
     }
 
     /*
-     * API пока не подключаем.
+     * Пока регистрации на backend нет.
      *
-     * Следующим шагом здесь будет:
-     *
-     * register(...)
-     * sendVerificationCode(...)
-     * router.push('/signup-verify')
+     * Просто открываем визуальный
+     * экран подтверждения телефона.
      */
 
-    Alert.alert(
-      'Регистрация',
-      role === 'customer'
-        ? 'Данные заказчика заполнены корректно.'
-        : 'Данные исполнителя заполнены корректно.'
-    );
+    router.push({
+      pathname: '/verify-phone',
+      params: {
+        phone: normalizedPhone,
+        role,
+      },
+    });
   }
 
   function handleLogin() {
@@ -185,9 +244,13 @@ export default function SignUpScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+      style={styles.safeArea}
+    >
       <KeyboardAvoidingView
-        style={styles.keyboardContainer}
+        style={
+          styles.keyboardContainer
+        }
         behavior={
           Platform.OS === 'ios'
             ? 'padding'
@@ -196,18 +259,24 @@ export default function SignUpScreen() {
       >
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={
+            false
+          }
           contentContainerStyle={
             styles.scrollContent
           }
         >
           <View style={styles.card}>
-            <View style={styles.hazard}>
+            <View
+              style={styles.hazard}
+            >
               <Image
                 source={require(
                   '../../assets/landing/hazard-stripe.svg'
                 )}
-                style={styles.hazardImage}
+                style={
+                  styles.hazardImage
+                }
                 contentFit="cover"
               />
             </View>
@@ -221,23 +290,32 @@ export default function SignUpScreen() {
                 contentFit="contain"
               />
 
-              <Text style={styles.title}>
+              <Text
+                style={styles.title}
+              >
                 {pageTitle}
               </Text>
 
-              <View style={styles.roles}>
+              <View
+                style={styles.roles}
+              >
                 <Pressable
                   accessibilityRole="button"
                   accessibilityState={{
                     selected:
-                      role === 'customer',
+                      role ===
+                      'customer',
                   }}
                   onPress={() =>
-                    selectRole('customer')
+                    selectRole(
+                      'customer'
+                    )
                   }
                   style={[
                     styles.roleButton,
-                    role === 'customer' &&
+
+                    role ===
+                      'customer' &&
                       styles.roleButtonActive,
                   ]}
                 >
@@ -254,14 +332,19 @@ export default function SignUpScreen() {
                   accessibilityRole="button"
                   accessibilityState={{
                     selected:
-                      role === 'contractor',
+                      role ===
+                      'contractor',
                   }}
                   onPress={() =>
-                    selectRole('contractor')
+                    selectRole(
+                      'contractor'
+                    )
                   }
                   style={[
                     styles.roleButton,
-                    role === 'contractor' &&
+
+                    role ===
+                      'contractor' &&
                       styles.roleButtonActive,
                   ]}
                 >
@@ -275,14 +358,20 @@ export default function SignUpScreen() {
                 </Pressable>
               </View>
 
-              <View style={styles.fields}>
+              <View
+                style={styles.fields}
+              >
                 <AuthInput
-                  label={identityPlaceholder}
+                  label={
+                    identityPlaceholder
+                  }
                   value={identity}
                   onChangeText={
                     handleIdentityChange
                   }
-                  error={identityError}
+                  error={
+                    identityError
+                  }
                   autoCapitalize="words"
                   autoCorrect={false}
                   returnKeyType="next"
@@ -291,7 +380,9 @@ export default function SignUpScreen() {
                 <AuthInput
                   label="Телефон"
                   value={phone}
-                  onChangeText={handlePhoneChange}
+                  onChangeText={
+                    handlePhoneChange
+                  }
                   error={phoneError}
                   keyboardType="phone-pad"
                   textContentType="telephoneNumber"
@@ -305,7 +396,9 @@ export default function SignUpScreen() {
                   onChangeText={
                     handlePasswordChange
                   }
-                  error={passwordError}
+                  error={
+                    passwordError
+                  }
                   secureTextEntry
                   textContentType="newPassword"
                   autoComplete="new-password"
@@ -314,7 +407,9 @@ export default function SignUpScreen() {
 
                 <AuthInput
                   label="Подтверждение пароля"
-                  value={passwordConfirmation}
+                  value={
+                    passwordConfirmation
+                  }
                   onChangeText={
                     handlePasswordConfirmationChange
                   }
@@ -331,22 +426,34 @@ export default function SignUpScreen() {
                 />
               </View>
 
-              <View style={styles.termsBlock}>
+              <View
+                style={
+                  styles.termsBlock
+                }
+              >
                 <Pressable
                   accessibilityRole="checkbox"
                   accessibilityState={{
                     checked:
                       hasAcceptedTerms,
                   }}
-                  onPress={toggleTerms}
-                  style={styles.termsRow}
+                  onPress={
+                    toggleTerms
+                  }
+                  style={
+                    styles.termsRow
+                  }
                 >
                   <View
                     style={[
                       styles.checkbox,
+
                       hasAcceptedTerms &&
                         styles.checkboxChecked,
-                      Boolean(termsError) &&
+
+                      Boolean(
+                        termsError
+                      ) &&
                         styles.checkboxError,
                     ]}
                   >
@@ -359,14 +466,19 @@ export default function SignUpScreen() {
                     ) : null}
                   </View>
 
-                  <Text style={styles.termsText}>
+                  <Text
+                    style={
+                      styles.termsText
+                    }
+                  >
                     Принимаю{' '}
                     <Text
                       style={
                         styles.termsLink
                       }
                     >
-                      условия использования
+                      условия
+                      использования
                     </Text>{' '}
                     и{' '}
                     <Text
@@ -374,8 +486,10 @@ export default function SignUpScreen() {
                         styles.termsLink
                       }
                     >
-                      политику обработки
-                      персональных данных
+                      политику
+                      обработки
+                      персональных
+                      данных
                     </Text>
                   </Text>
                 </Pressable>
@@ -393,9 +507,14 @@ export default function SignUpScreen() {
 
               <Pressable
                 accessibilityRole="button"
-                onPress={handleRegistration}
-                style={({ pressed }) => [
+                onPress={
+                  handleRegistration
+                }
+                style={({
+                  pressed,
+                }) => [
                   styles.submitButton,
+
                   pressed &&
                     styles.submitButtonPressed,
                 ]}
@@ -409,12 +528,22 @@ export default function SignUpScreen() {
                 </Text>
               </Pressable>
 
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>
+              <View
+                style={styles.footer}
+              >
+                <Text
+                  style={
+                    styles.footerText
+                  }
+                >
                   Уже есть аккаунт?{' '}
                   <Text
-                    style={styles.loginLink}
-                    onPress={handleLogin}
+                    style={
+                      styles.loginLink
+                    }
+                    onPress={
+                      handleLogin
+                    }
                   >
                     Войти
                   </Text>
@@ -428,269 +557,282 @@ export default function SignUpScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f1f1f1',
-  },
+const styles =
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: '#f1f1f1',
+    },
 
-  keyboardContainer: {
-    flex: 1,
-  },
+    keyboardContainer: {
+      flex: 1,
+    },
 
-  scrollContent: {
-    flexGrow: 1,
+    scrollContent: {
+      flexGrow: 1,
 
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 16,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 16,
 
-    backgroundColor: '#f1f1f1',
-  },
+      backgroundColor: '#f1f1f1',
+    },
 
-  card: {
-    width: '100%',
+    card: {
+      width: '100%',
 
-    overflow: 'hidden',
+      overflow: 'hidden',
 
-    borderRadius: 14,
-    backgroundColor: '#ffffff',
-  },
+      borderRadius: 14,
+      backgroundColor: '#ffffff',
+    },
 
-  hazard: {
-    width: '100%',
-    height: 8,
+    hazard: {
+      width: '100%',
+      height: 8,
 
-    overflow: 'hidden',
+      overflow: 'hidden',
 
-    backgroundColor: '#000000',
-  },
+      backgroundColor: '#000000',
+    },
 
-  hazardImage: {
-    width: '100%',
-    height: 8,
-  },
+    hazardImage: {
+      width: '100%',
+      height: 8,
+    },
 
-  body: {
-    width: '100%',
+    body: {
+      width: '100%',
 
-    alignItems: 'center',
+      alignItems: 'center',
 
-    paddingTop: 40,
-    paddingHorizontal: 16,
-    paddingBottom: 40,
+      paddingTop: 40,
+      paddingHorizontal: 16,
+      paddingBottom: 40,
 
-    gap: 32,
-  },
+      gap: 32,
+    },
 
-  logo: {
-    width: 86,
-    height: 28,
-  },
+    logo: {
+      width: 86,
+      height: 28,
+    },
 
-  title: {
-    width: '100%',
+    title: {
+      width: '100%',
 
-    paddingHorizontal: 4,
+      paddingHorizontal: 4,
 
-    color: '#191919',
+      color: '#191919',
 
-    fontFamily: 'Roboto_500Medium',
-    fontSize: 18,
-    lineHeight: 22,
+      fontFamily:
+        'Roboto_500Medium',
 
-    textAlign: 'center',
+      fontSize: 18,
+      lineHeight: 22,
 
-    includeFontPadding: false,
-  },
+      textAlign: 'center',
 
-  roles: {
-    width: '100%',
-    maxWidth: 304,
+      includeFontPadding: false,
+    },
 
-    flexDirection: 'row',
+    roles: {
+      width: '100%',
+      maxWidth: 304,
 
-    gap: 4,
+      flexDirection: 'row',
 
-    marginBottom: 16,
-    padding: 4,
+      gap: 4,
 
-    borderRadius: 12,
-    backgroundColor: '#f1f1f1',
-  },
+      marginBottom: 16,
+      padding: 4,
 
-  roleButton: {
-    flex: 1,
-    height: 36,
+      borderRadius: 12,
+      backgroundColor: '#f1f1f1',
+    },
 
-    alignItems: 'center',
-    justifyContent: 'center',
+    roleButton: {
+      flex: 1,
+      height: 36,
 
-    paddingHorizontal: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
 
-    borderRadius: 8,
-    backgroundColor: 'transparent',
-  },
+      paddingHorizontal: 8,
 
-  roleButtonActive: {
-    backgroundColor: '#ffdc3c',
-  },
+      borderRadius: 8,
+      backgroundColor:
+        'transparent',
+    },
 
-  roleButtonText: {
-    color: '#191919',
+    roleButtonActive: {
+      backgroundColor: '#ffdc3c',
+    },
 
-    fontFamily: 'Roboto_500Medium',
-    fontSize: 12,
-    lineHeight: 16,
+    roleButtonText: {
+      color: '#191919',
 
-    textAlign: 'center',
+      fontFamily:
+        'Roboto_500Medium',
 
-    includeFontPadding: false,
-  },
+      fontSize: 12,
+      lineHeight: 16,
 
-  fields: {
-    width: '100%',
+      textAlign: 'center',
 
-    gap: 16,
-  },
+      includeFontPadding: false,
+    },
 
-  termsBlock: {
-    width: '100%',
+    fields: {
+      width: '100%',
+      gap: 16,
+    },
 
-    marginTop: 24,
-  },
+    termsBlock: {
+      width: '100%',
+      marginTop: 24,
+    },
 
-  termsRow: {
-    width: '100%',
+    termsRow: {
+      width: '100%',
 
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'flex-start',
 
-    gap: 6,
-  },
+      gap: 6,
+    },
 
-  checkbox: {
-    position: 'relative',
+    checkbox: {
+      position: 'relative',
 
-    width: 20,
-    height: 20,
+      width: 20,
+      height: 20,
 
-    flexShrink: 0,
+      flexShrink: 0,
 
-    borderWidth: 1,
-    borderColor: '#c5c4bc',
-    borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#c5c4bc',
+      borderRadius: 10,
 
-    backgroundColor: '#ffffff',
-  },
+      backgroundColor: '#ffffff',
+    },
 
-  checkboxChecked: {
-    borderColor: '#ffdc3c',
-    backgroundColor: '#ffdc3c',
-  },
+    checkboxChecked: {
+      borderColor: '#ffdc3c',
+      backgroundColor: '#ffdc3c',
+    },
 
-  checkboxError: {
-    borderColor: '#d92d20',
-  },
+    checkboxError: {
+      borderColor: '#d92d20',
+    },
 
-  checkmark: {
-    position: 'absolute',
+    checkmark: {
+      position: 'absolute',
 
-    top: 3,
-    left: 7,
+      top: 3,
+      left: 7,
 
-    width: 5,
-    height: 9,
+      width: 5,
+      height: 9,
 
-    borderRightWidth: 1.5,
-    borderBottomWidth: 1.5,
-    borderColor: '#000000',
+      borderRightWidth: 1.5,
+      borderBottomWidth: 1.5,
+      borderColor: '#000000',
 
-    transform: [
-      {
-        rotate: '45deg',
-      },
-    ],
-  },
+      transform: [
+        {
+          rotate: '45deg',
+        },
+      ],
+    },
 
-  termsText: {
-    flex: 1,
+    termsText: {
+      flex: 1,
 
-    color: '#808080',
+      color: '#808080',
 
-    fontFamily: 'Roboto_400Regular',
-    fontSize: 12,
-    lineHeight: 16,
+      fontFamily:
+        'Roboto_400Regular',
 
-    includeFontPadding: false,
-  },
+      fontSize: 12,
+      lineHeight: 16,
 
-  termsLink: {
-    color: '#191919',
-    textDecorationLine: 'underline',
-  },
+      includeFontPadding: false,
+    },
 
-  termsError: {
-    marginTop: 6,
+    termsLink: {
+      color: '#191919',
+      textDecorationLine:
+        'underline',
+    },
 
-    color: '#d92d20',
+    termsError: {
+      marginTop: 6,
 
-    fontFamily: 'Roboto_400Regular',
-    fontSize: 12,
-    lineHeight: 16,
+      color: '#d92d20',
 
-    includeFontPadding: false,
-  },
+      fontFamily:
+        'Roboto_400Regular',
 
-  submitButton: {
-    width: '100%',
-    height: 48,
+      fontSize: 12,
+      lineHeight: 16,
 
-    alignItems: 'center',
-    justifyContent: 'center',
+      includeFontPadding: false,
+    },
 
-    marginTop: 24,
+    submitButton: {
+      width: '100%',
+      height: 48,
 
-    borderRadius: 12,
-    backgroundColor: '#000000',
-  },
+      alignItems: 'center',
+      justifyContent: 'center',
 
-  submitButtonPressed: {
-    opacity: 0.8,
-  },
+      marginTop: 24,
 
-  submitButtonText: {
-    color: '#ffffff',
+      borderRadius: 12,
+      backgroundColor: '#000000',
+    },
 
-    fontFamily: 'Roboto_500Medium',
-    fontSize: 14,
-    lineHeight: 18,
+    submitButtonPressed: {
+      opacity: 0.8,
+    },
 
-    includeFontPadding: false,
-  },
+    submitButtonText: {
+      color: '#ffffff',
 
-  footer: {
-    width: '100%',
+      fontFamily:
+        'Roboto_500Medium',
 
-    marginTop: 24,
+      fontSize: 14,
+      lineHeight: 18,
 
-    alignItems: 'center',
-  },
+      includeFontPadding: false,
+    },
 
-  footerText: {
-    color: '#808080',
+    footer: {
+      width: '100%',
+      marginTop: 24,
 
-    fontFamily: 'Roboto_400Regular',
-    fontSize: 12,
-    lineHeight: 16,
+      alignItems: 'center',
+    },
 
-    textAlign: 'center',
+    footerText: {
+      color: '#808080',
 
-    includeFontPadding: false,
-  },
+      fontFamily:
+        'Roboto_400Regular',
 
-  loginLink: {
-    color: '#191919',
-    textDecorationLine: 'underline',
-  },
-});
+      fontSize: 12,
+      lineHeight: 16,
+
+      textAlign: 'center',
+
+      includeFontPadding: false,
+    },
+
+    loginLink: {
+      color: '#191919',
+      textDecorationLine:
+        'underline',
+    },
+  });

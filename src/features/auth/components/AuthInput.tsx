@@ -1,107 +1,171 @@
-import { Image } from 'expo-image';
-import { useState } from 'react';
 import {
-  Pressable,
+  useRef,
+  useState,
+} from 'react';
+
+import {
   StyleSheet,
   Text,
   TextInput,
-  type TextInputProps,
+  type NativeSyntheticEvent,
+  type TextInputKeyPressEventData,
   View,
 } from 'react-native';
 
-type AuthInputProps = Omit<
-  TextInputProps,
-  'value' | 'onChangeText'
-> & {
-  label: string;
+interface AuthCodeInputProps {
   value: string;
-  onChangeText: (value: string) => void;
+  onChange: (value: string) => void;
+  onComplete?: (value: string) => void;
   error?: string;
-};
+  disabled?: boolean;
+  length?: number;
+}
 
-export function AuthInput({
-  label,
+export function AuthCodeInput({
   value,
-  onChangeText,
+  onChange,
+  onComplete,
   error = '',
-  secureTextEntry = false,
-  style,
-  ...inputProps
-}: AuthInputProps) {
-  const [isFocused, setIsFocused] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  disabled = false,
+  length = 4,
+}: AuthCodeInputProps) {
+  const inputs = useRef<Array<TextInput | null>>([]);
+  const [focusedIndex, setFocusedIndex] =
+    useState<number | null>(null);
 
-  const isFilled = value.length > 0;
-  const isPasswordField = secureTextEntry;
+  function focusInput(index: number) {
+    const safeIndex = Math.max(
+      0,
+      Math.min(index, length - 1)
+    );
 
-  function handleChangeText(nextValue: string) {
-    if (!nextValue) {
-      setIsPasswordVisible(false);
+    inputs.current[safeIndex]?.focus();
+  }
+
+  function updateCode(
+    incomingValue: string,
+    startIndex: number
+  ) {
+    const digits = incomingValue.replace(
+      /\D/g,
+      ''
+    );
+
+    const current = Array.from(
+      { length },
+      (_, index) => value[index] ?? ''
+    );
+
+    if (!digits) {
+      current[startIndex] = '';
+
+      onChange(current.join(''));
+      return;
     }
 
-    onChangeText(nextValue);
+    const availableDigits = digits.slice(
+      0,
+      length - startIndex
+    );
+
+    availableDigits.split('').forEach(
+      (digit, offset) => {
+        current[startIndex + offset] = digit;
+      }
+    );
+
+    const nextCode = current.join('').slice(
+      0,
+      length
+    );
+
+    onChange(nextCode);
+
+    if (nextCode.length === length) {
+      inputs.current[length - 1]?.blur();
+      onComplete?.(nextCode);
+      return;
+    }
+
+    focusInput(
+      startIndex + availableDigits.length
+    );
+  }
+
+  function handleKeyPress(
+    event: NativeSyntheticEvent<TextInputKeyPressEventData>,
+    index: number
+  ) {
+    if (
+      event.nativeEvent.key === 'Backspace' &&
+      !value[index] &&
+      index > 0
+    ) {
+      const current = Array.from(
+        { length },
+        (_, currentIndex) =>
+          value[currentIndex] ?? ''
+      );
+
+      current[index - 1] = '';
+
+      onChange(current.join(''));
+      focusInput(index - 1);
+    }
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputWrapper}>
-        {isFilled ? (
-          <Text style={styles.label}>
-            {label}
-          </Text>
-        ) : null}
-
-        <TextInput
-          {...inputProps}
-          value={value}
-          onChangeText={handleChangeText}
-          placeholder={isFilled ? undefined : label}
-          placeholderTextColor="#808080"
-          secureTextEntry={
-            isPasswordField && !isPasswordVisible
-          }
-          selectionColor="#000000"
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          style={[
-            styles.input,
-            isFilled && styles.inputFilled,
-            isFocused && styles.inputFocused,
-            Boolean(error) && styles.inputError,
-            isPasswordField &&
-              isFilled &&
-              styles.inputWithPasswordButton,
-            style,
-          ]}
-        />
-
-        {isPasswordField && isFilled ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              isPasswordVisible
-                ? 'Скрыть пароль'
-                : 'Показать пароль'
-            }
-            onPress={() =>
-              setIsPasswordVisible((current) => !current)
-            }
-            hitSlop={8}
-            style={styles.passwordButton}
-          >
-            <Image
-              source={require(
-                '../../../../assets/landing/show-password.svg'
-              )}
-              style={styles.passwordIcon}
-              contentFit="contain"
+      <View style={styles.controls}>
+        {Array.from({ length }).map(
+          (_, index) => (
+            <TextInput
+              key={index}
+              ref={(element) => {
+                inputs.current[index] =
+                  element;
+              }}
+              value={value[index] ?? ''}
+              editable={!disabled}
+              keyboardType="number-pad"
+              textContentType={
+                index === 0
+                  ? 'oneTimeCode'
+                  : 'none'
+              }
+              maxLength={length}
+              selectTextOnFocus
+              caretHidden
+              onFocus={() =>
+                setFocusedIndex(index)
+              }
+              onBlur={() =>
+                setFocusedIndex((current) =>
+                  current === index
+                    ? null
+                    : current
+                )
+              }
+              onChangeText={(text) =>
+                updateCode(text, index)
+              }
+              onKeyPress={(event) =>
+                handleKeyPress(event, index)
+              }
+              style={[
+                styles.input,
+                focusedIndex === index &&
+                  styles.inputFocused,
+                Boolean(error) &&
+                  styles.inputError,
+              ]}
             />
-          </Pressable>
-        ) : null}
+          )
+        )}
       </View>
 
       {error ? (
-        <Text style={styles.errorText}>
+        <Text style={styles.error}>
           {error}
         </Text>
       ) : null}
@@ -112,18 +176,23 @@ export function AuthInput({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    gap: 6,
+    gap: 8,
   },
 
-  inputWrapper: {
-    position: 'relative',
+  controls: {
     width: '100%',
+
+    flexDirection: 'row',
+    justifyContent: 'center',
+
+    gap: 12,
   },
 
   input: {
-    width: '100%',
+    width: 48,
     height: 48,
-    paddingHorizontal: 16,
+
+    padding: 0,
 
     borderWidth: 1,
     borderColor: 'transparent',
@@ -132,15 +201,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f1f1',
     color: '#191919',
 
-    fontFamily: 'Roboto_400Regular',
-    fontSize: 16,
+    fontFamily: 'Roboto_500Medium',
+    fontSize: 20,
+    lineHeight: 24,
+
+    textAlign: 'center',
 
     includeFontPadding: false,
-  },
-
-  inputFilled: {
-    paddingTop: 16,
-    paddingBottom: 2,
   },
 
   inputFocused: {
@@ -151,46 +218,14 @@ const styles = StyleSheet.create({
     borderColor: '#d92d20',
   },
 
-  inputWithPasswordButton: {
-    paddingRight: 48,
-  },
-
-  label: {
-    position: 'absolute',
-    top: 6,
-    left: 16,
-    zIndex: 2,
-
-    color: '#808080',
-    fontFamily: 'Roboto_400Regular',
-    fontSize: 12,
-    lineHeight: 16,
-
-    includeFontPadding: false,
-  },
-
-  passwordButton: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-
-    width: 24,
-    height: 24,
-
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  passwordIcon: {
-    width: 16,
-    height: 16,
-  },
-
-  errorText: {
+  error: {
     color: '#d92d20',
+
     fontFamily: 'Roboto_400Regular',
     fontSize: 12,
     lineHeight: 16,
+
+    textAlign: 'center',
 
     includeFontPadding: false,
   },
