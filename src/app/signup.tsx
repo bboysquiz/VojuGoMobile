@@ -11,6 +11,7 @@ import {
 } from 'react';
 
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -19,6 +20,8 @@ import {
   Text,
   View,
 } from 'react-native';
+
+import { register } from '../features/auth/api/auth.api';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -151,7 +154,7 @@ export default function SignUpScreen() {
     setTermsError('');
   }
 
-  function handleRegistration() {
+  async function handleRegistration() {
     setIdentityError('');
     setPhoneError('');
     setPasswordError('');
@@ -223,12 +226,25 @@ export default function SignUpScreen() {
       return;
     }
 
-    /*
-     * Пока регистрации на backend нет.
-     *
-     * Просто открываем визуальный
-     * экран подтверждения телефона.
-     */
+    try {
+      await register({
+        phone: normalizedPhone,
+        password,
+        roles: [role],
+        name: normalizedIdentity,
+        company_name:
+          normalizedIdentity,
+      });
+    } catch (error) {
+      Alert.alert(
+        'Не удалось зарегистрироваться',
+        error instanceof Error
+          ? error.message
+          : 'Попробуйте снова'
+      );
+
+      return;
+    }
 
     router.push({
       pathname: '/verify-phone',

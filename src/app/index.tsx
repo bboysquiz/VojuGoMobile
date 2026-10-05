@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getSelf, login } from '../features/auth/api/auth.api';
 
 import { AuthInput } from '../features/auth/components/AuthInput';
 import {
@@ -41,11 +42,12 @@ export default function LoginScreen() {
     setPasswordError('');
   }
 
-  function handleLogin() {
+  async function handleLogin() {
     setPhoneError('');
     setPasswordError('');
 
-    const normalizedPhone = phone.trim();
+    const normalizedPhone =
+      phone.trim();
 
     let hasError = false;
 
@@ -57,7 +59,9 @@ export default function LoginScreen() {
     }
 
     if (!password) {
-      setPasswordError('Введите пароль');
+      setPasswordError(
+        'Введите пароль'
+      );
       hasError = true;
     }
 
@@ -65,15 +69,40 @@ export default function LoginScreen() {
       return;
     }
 
-    /*
-     * API пока не подключаем.
-     * Следующим шагом здесь будет настоящий login().
-     */
+    try {
+      await login({
+        phone: normalizedPhone,
+        password,
+      });
 
-    Alert.alert(
-      'Авторизация',
-      'Форма заполнена корректно. Следующим шагом подключим API.'
-    );
+      const user = await getSelf();
+
+      if (user.roles.includes('customer')) {
+        router.replace(
+          '/cabinet/customer/orders'
+        );
+        return;
+      }
+
+      if (user.roles.includes('contractor')) {
+        router.replace(
+          '/cabinet/contractor'
+        );
+        return;
+      }
+
+      Alert.alert(
+        'Ошибка',
+        'Для пользователя не назначена поддерживаемая роль'
+      );
+    } catch (error) {
+      Alert.alert(
+        'Не удалось войти',
+        error instanceof Error
+          ? error.message
+          : 'Попробуйте снова'
+      );
+    }
   }
 
   function handleCustomerRegistration() {
@@ -168,7 +197,7 @@ export default function LoginScreen() {
                 style={({ pressed }) => [
                   styles.loginButton,
                   pressed &&
-                    styles.loginButtonPressed,
+                  styles.loginButtonPressed,
                 ]}
               >
                 <Text
