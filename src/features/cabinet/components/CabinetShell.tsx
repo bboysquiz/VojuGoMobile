@@ -81,6 +81,46 @@ const contractorNavigation: NavigationItem[] = [
   },
 ];
 
+function isNavigationItemActive(
+  pathname: string,
+  item: NavigationItem
+): boolean {
+  if (!item.path) {
+    return false;
+  }
+
+  /*
+   * Корневая страница исполнителя
+   * должна быть активна только на
+   * /cabinet/contractor.
+   */
+  if (
+    item.path ===
+    '/cabinet/contractor'
+  ) {
+    return (
+      pathname ===
+      '/cabinet/contractor'
+    );
+  }
+
+  /*
+   * Остальные разделы допускают
+   * вложенные страницы.
+   *
+   * Например:
+   * /vehicles
+   * /vehicles/new
+   * /vehicles/123/edit
+   */
+  return (
+    pathname === item.path ||
+    pathname.startsWith(
+      `${item.path}/`
+    )
+  );
+}
+
 export function CabinetShell({
   role,
   children,
@@ -88,11 +128,17 @@ export function CabinetShell({
   const router = useRouter();
   const pathname = usePathname();
 
-  const [user, setUser] =
-    useState<SelfResponse | null>(null);
+  const [
+    user,
+    setUser,
+  ] = useState<SelfResponse | null>(
+    null
+  );
 
-  const [menuOpen, setMenuOpen] =
-    useState(false);
+  const [
+    menuOpen,
+    setMenuOpen,
+  ] = useState(false);
 
   useEffect(() => {
     void loadUser();
@@ -104,7 +150,9 @@ export function CabinetShell({
         await getSelf();
 
       if (
-        !currentUser.roles.includes(role)
+        !currentUser.roles.includes(
+          role
+        )
       ) {
         router.replace('/');
         return;
@@ -132,9 +180,14 @@ export function CabinetShell({
     user?.phone ||
     '';
 
-  function navigate(path: string) {
+  function navigate(
+    path: string
+  ) {
     setMenuOpen(false);
-    router.push(path as never);
+
+    router.push(
+      path as never
+    );
   }
 
   return (
@@ -160,10 +213,13 @@ export function CabinetShell({
           }
           onPress={() =>
             setMenuOpen(
-              (current) => !current
+              (current) =>
+                !current
             )
           }
-          style={styles.menuButton}
+          style={
+            styles.menuButton
+          }
         >
           <View
             style={[
@@ -191,272 +247,386 @@ export function CabinetShell({
         </Pressable>
       </View>
 
-      {menuOpen ? (
-        <View style={styles.menu}>
-          <Pressable
-            style={styles.user}
-            onPress={() =>
-              navigate(profilePath)
-            }
+      <View style={styles.body}>
+        {/*
+         * ВАЖНО:
+         *
+         * Slot / children всегда остаётся
+         * смонтированным.
+         *
+         * Раньше при menuOpen=true
+         * children исчезал из React tree,
+         * из-за чего Expo Router терял
+         * текущую дочернюю страницу.
+         */}
+        <View
+          style={styles.content}
+          pointerEvents={
+            menuOpen
+              ? 'none'
+              : 'auto'
+          }
+        >
+          {children}
+        </View>
+
+        {menuOpen ? (
+          <View
+            style={styles.menu}
           >
-            <Text
-              numberOfLines={1}
-              style={styles.userName}
-            >
-              {displayName}
-            </Text>
-
-            <Text style={styles.arrow}>
-              ›
-            </Text>
-          </Pressable>
-
-          <View style={styles.navigation}>
-            {navigation.map((item) => {
-              const active =
-                item.path === pathname;
-
-              return (
-                <Pressable
-                  key={item.label}
-                  onPress={() => {
-                    if (item.href) {
-                      void Linking.openURL(
-                        item.href
-                      );
-                      return;
-                    }
-
-                    if (item.path) {
-                      navigate(item.path);
-                    }
-                  }}
-                  style={[
-                    styles.navigationItem,
-                    active &&
-                      styles.navigationItemActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.navigationText,
-                      active &&
-                        styles.navigationTextActive,
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <View style={styles.contacts}>
             <Pressable
-              style={styles.contactButton}
+              style={styles.user}
               onPress={() =>
-                void Linking.openURL(
-                  'https://t.me/vozhugo'
+                navigate(
+                  profilePath
                 )
               }
             >
               <Text
+                numberOfLines={1}
                 style={
-                  styles.contactButtonText
+                  styles.userName
                 }
               >
-                Написать нам
+                {displayName}
+              </Text>
+
+              <Text
+                style={
+                  styles.arrow
+                }
+              >
+                ›
               </Text>
             </Pressable>
 
-            <Text
-              style={styles.email}
-              onPress={() =>
-                void Linking.openURL(
-                  'mailto:info@vozhugo.ru'
-                )
+            <View
+              style={
+                styles.navigation
               }
             >
-              info@vozhugo.ru
-            </Text>
+              {navigation.map(
+                (item) => {
+                  const active =
+                    isNavigationItemActive(
+                      pathname,
+                      item
+                    );
+
+                  return (
+                    <Pressable
+                      key={
+                        item.label
+                      }
+                      onPress={() => {
+                        if (
+                          item.href
+                        ) {
+                          void Linking.openURL(
+                            item.href
+                          );
+
+                          return;
+                        }
+
+                        if (
+                          item.path
+                        ) {
+                          navigate(
+                            item.path
+                          );
+                        }
+                      }}
+                      style={[
+                        styles.navigationItem,
+                        active &&
+                          styles.navigationItemActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.navigationText,
+                          active &&
+                            styles.navigationTextActive,
+                        ]}
+                      >
+                        {
+                          item.label
+                        }
+                      </Text>
+                    </Pressable>
+                  );
+                }
+              )}
+            </View>
+
+            <View
+              style={
+                styles.contacts
+              }
+            >
+              <Pressable
+                style={
+                  styles.contactButton
+                }
+                onPress={() =>
+                  void Linking.openURL(
+                    'https://t.me/vozhugo'
+                  )
+                }
+              >
+                <Text
+                  style={
+                    styles.contactButtonText
+                  }
+                >
+                  Написать нам
+                </Text>
+              </Pressable>
+
+              <Text
+                style={
+                  styles.email
+                }
+                onPress={() =>
+                  void Linking.openURL(
+                    'mailto:info@vozhugo.ru'
+                  )
+                }
+              >
+                info@vozhugo.ru
+              </Text>
+            </View>
           </View>
-        </View>
-      ) : (
-        <View style={styles.content}>
-          {children}
-        </View>
-      )}
+        ) : null}
+      </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
+const styles =
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor:
+        '#ffffff',
+    },
 
-  header: {
-    height: 64,
-    paddingHorizontal: 16,
+    header: {
+      height: 64,
+      paddingHorizontal: 16,
 
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent:
+        'space-between',
 
-    backgroundColor: '#ffffff',
-  },
+      backgroundColor:
+        '#ffffff',
+    },
 
-  logo: {
-    width: 86,
-    height: 28,
-  },
+    logo: {
+      width: 86,
+      height: 28,
+    },
 
-  menuButton: {
-    width: 24,
-    height: 24,
+    menuButton: {
+      width: 24,
+      height: 24,
 
-    justifyContent: 'center',
-    alignItems: 'center',
+      justifyContent:
+        'center',
+      alignItems: 'center',
 
-    gap: 5,
-  },
+      gap: 5,
+    },
 
-  menuLine: {
-    width: 20,
-    height: 2,
+    menuLine: {
+      width: 20,
+      height: 2,
 
-    borderRadius: 2,
-    backgroundColor: '#000000',
-  },
+      borderRadius: 2,
+      backgroundColor:
+        '#000000',
+    },
 
-  menuLineFirstOpen: {
-    position: 'absolute',
-    transform: [
-      { rotate: '45deg' },
-    ],
-  },
+    menuLineFirstOpen: {
+      position: 'absolute',
 
-  menuLineMiddleOpen: {
-    opacity: 0,
-  },
+      transform: [
+        {
+          rotate: '45deg',
+        },
+      ],
+    },
 
-  menuLineLastOpen: {
-    position: 'absolute',
-    transform: [
-      { rotate: '-45deg' },
-    ],
-  },
+    menuLineMiddleOpen: {
+      opacity: 0,
+    },
 
-  content: {
-    flex: 1,
-    backgroundColor: '#f1f1f1',
-  },
+    menuLineLastOpen: {
+      position: 'absolute',
 
-  menu: {
-    flex: 1,
+      transform: [
+        {
+          rotate: '-45deg',
+        },
+      ],
+    },
 
-    padding: 16,
+    /*
+     * Контейнер под header.
+     * Внутри одновременно находятся
+     * текущая страница и overlay меню.
+     */
+    body: {
+      flex: 1,
+      position: 'relative',
+    },
 
-    backgroundColor: '#f1f1f1',
-  },
+    /*
+     * Страница всегда остаётся
+     * смонтированной.
+     */
+    content: {
+      flex: 1,
+      backgroundColor:
+        '#f1f1f1',
+    },
 
-  user: {
-    width: '100%',
-    minHeight: 54,
+    /*
+     * Меню теперь overlay поверх
+     * текущей страницы.
+     */
+    menu: {
+      position: 'absolute',
 
-    paddingHorizontal: 16,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
 
-    flexDirection: 'row',
-    alignItems: 'center',
+      zIndex: 100,
 
-    borderWidth: 1,
-    borderColor: '#d9d9d9',
-    borderRadius: 12,
+      padding: 16,
 
-    backgroundColor: '#ffffff',
-  },
+      backgroundColor:
+        '#f1f1f1',
+    },
 
-  userName: {
-    flex: 1,
+    user: {
+      width: '100%',
+      minHeight: 54,
 
-    color: '#191919',
+      paddingHorizontal: 16,
 
-    fontFamily: 'Roboto_500Medium',
-    fontSize: 14,
-    lineHeight: 18,
-  },
+      flexDirection: 'row',
+      alignItems: 'center',
 
-  arrow: {
-    color: '#808080',
-    fontSize: 28,
-    lineHeight: 28,
-  },
+      borderWidth: 1,
+      borderColor:
+        '#d9d9d9',
+      borderRadius: 12,
 
-  navigation: {
-    marginTop: 21,
-    gap: 4,
-  },
+      backgroundColor:
+        '#ffffff',
+    },
 
-  navigationItem: {
-    minHeight: 48,
+    userName: {
+      flex: 1,
 
-    paddingHorizontal: 16,
+      color: '#191919',
 
-    justifyContent: 'center',
+      fontFamily:
+        'Roboto_500Medium',
+      fontSize: 14,
+      lineHeight: 18,
+    },
 
-    borderRadius: 6,
-  },
+    arrow: {
+      color: '#808080',
 
-  navigationItemActive: {
-    backgroundColor: '#e9e9e9',
-  },
+      fontSize: 28,
+      lineHeight: 28,
+    },
 
-  navigationText: {
-    color: '#808080',
+    navigation: {
+      marginTop: 21,
+      gap: 4,
+    },
 
-    fontFamily: 'Roboto_400Regular',
-    fontSize: 18,
-    lineHeight: 24,
-  },
+    navigationItem: {
+      minHeight: 48,
 
-  navigationTextActive: {
-    color: '#191919',
-    fontFamily: 'Roboto_500Medium',
-  },
+      paddingHorizontal: 16,
 
-  contacts: {
-    marginTop: 'auto',
-    paddingBottom: 8,
+      justifyContent:
+        'center',
 
-    flexDirection: 'row',
-    alignItems: 'center',
+      borderRadius: 6,
+    },
 
-    gap: 8,
-  },
+    navigationItemActive: {
+      backgroundColor:
+        '#e9e9e9',
+    },
 
-  contactButton: {
-    minHeight: 32,
+    navigationText: {
+      color: '#808080',
 
-    paddingHorizontal: 12,
+      fontFamily:
+        'Roboto_400Regular',
+      fontSize: 18,
+      lineHeight: 24,
+    },
 
-    justifyContent: 'center',
+    navigationTextActive: {
+      color: '#191919',
 
-    borderRadius: 999,
-    backgroundColor: '#000000',
-  },
+      fontFamily:
+        'Roboto_500Medium',
+    },
 
-  contactButtonText: {
-    color: '#ffffff',
+    contacts: {
+      position: 'absolute',
 
-    fontFamily: 'Roboto_400Regular',
-    fontSize: 12,
-  },
+      right: 16,
+      bottom: 8,
+      left: 16,
 
-  email: {
-    color: '#191919',
+      flexDirection: 'row',
+      alignItems: 'center',
 
-    fontFamily: 'Roboto_400Regular',
-    fontSize: 12,
-  },
-});
+      gap: 8,
+    },
+
+    contactButton: {
+      minHeight: 32,
+
+      paddingHorizontal: 12,
+
+      justifyContent:
+        'center',
+
+      borderRadius: 999,
+
+      backgroundColor:
+        '#000000',
+    },
+
+    contactButtonText: {
+      color: '#ffffff',
+
+      fontFamily:
+        'Roboto_400Regular',
+      fontSize: 12,
+    },
+
+    email: {
+      color: '#191919',
+
+      fontFamily:
+        'Roboto_400Regular',
+      fontSize: 12,
+    },
+  });
