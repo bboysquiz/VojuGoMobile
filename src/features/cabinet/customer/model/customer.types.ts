@@ -1,16 +1,6 @@
-export type VehicleType =
-  | 'crane_truck'
-  | 'backhoe_loader'
-  | 'tractor'
-  | 'dump_truck'
-  | 'aerial_platform'
-  | 'tow_truck'
-  | 'mini_loader';
-
-export interface VehicleProperties {
-  type: VehicleType;
-  [key: string]: VehicleType | string | number | boolean | undefined;
-}
+import type { VehicleProperties } from '../../model/vehicle';
+export { getVehicleTypeLabel, getVehiclePropertyLabel, formatVehiclePropertyValue, getVehiclePropertyEntries } from '../../model/vehicle';
+export type { VehicleType, VehicleProperties, VehiclePropertyValue } from '../../model/vehicle';
 
 export interface ApiVehicle {
   id: string;
@@ -104,43 +94,24 @@ export interface OrderReviewFields {
   comment?: string;
 }
 
-export function getVehicleTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    crane_truck: 'Манипулятор',
-    backhoe_loader: 'Экскаватор-погрузчик',
-    tractor: 'Трактор',
-    dump_truck: 'Самосвал',
-    aerial_platform: 'Автовышка',
-    tow_truck: 'Эвакуатор',
-    mini_loader: 'Мини-погрузчик',
-  };
-
-  return labels[type] ?? type;
+export interface OrderReview {
+  id: string;
+  order_id: string;
+  reviewer_id: string;
+  reviewee_id: string;
+  rating: number | null;
+  comment: string | null;
+  created_at: string;
 }
 
-export function formatVehiclePropertyValue(name: string, value: unknown): string {
-  if (typeof value === 'boolean') {
-    return value ? 'Есть' : 'Нет';
-  }
-
-  switch (name) {
-    case 'side_capacity':
-    case 'boom_capacity':
-      return String(value) + ' т';
-    case 'bed_length':
-      return String(value) + ' м';
-    case 'capacity':
-      return String(value) + ' м³';
-    default:
-      return String(value);
-  }
+export interface CustomerHistoryOrder extends Omit<CustomerOrder, 'responses'> {
+  contractor_name: string | null;
+  reviewer_name: string;
+  review: OrderReview | null;
 }
 
-export function getVehiclePropertyEntries(properties: VehicleProperties) {
-  return Object.entries(properties).filter(
-    ([name, value]) =>
-      name !== 'type' &&
-      value !== undefined &&
-      value !== null,
-  );
+export interface CustomerHistory {
+  summary: { completed_orders: number; cancelled_orders: number; ratings_count: number };
+  completed_orders: CustomerHistoryOrder[];
+  cancelled_orders: CustomerHistoryOrder[];
 }

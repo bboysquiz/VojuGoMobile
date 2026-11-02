@@ -74,11 +74,12 @@ export function ContractorVehicleCard({
       ) : null}
 
       <View style={styles.header}>
-        <View style={styles.icon}>
-          <Text style={styles.iconText}>
-            ▣
-          </Text>
-        </View>
+        <Image
+          source={require('../../../../../assets/cabinet/my-item.svg')}
+          style={styles.icon}
+          contentFit="contain"
+          accessible={false}
+        />
 
         <View style={styles.heading}>
           <Text style={styles.model}>
@@ -285,15 +286,7 @@ const styles =
     icon: {
       width: 40,
       height: 40,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#f1f1f1',
-    },
-
-    iconText: {
-      color: '#191919',
-      fontSize: 20,
+      flexShrink: 0,
     },
 
     heading: {

@@ -1,10 +1,10 @@
 import {
-  Modal,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { AppModal } from '../../../../components/app-modal';
 
 import type {
   ReactNode,
@@ -140,37 +140,21 @@ export function ContractorEmptyState({
 interface StatCardProps {
   label: string;
   value: string | number;
-  description?: string;
-  positive?: boolean;
 }
 
 export function ContractorStatCard({
   label,
   value,
-  description,
-  positive = false,
 }: StatCardProps) {
   return (
     <View style={styles.statCard}>
-      <Text style={styles.statLabel}>
-        {label}
-      </Text>
-
       <Text style={styles.statValue}>
         {value}
       </Text>
 
-      {description ? (
-        <Text
-          style={[
-            styles.statDescription,
-            positive &&
-              styles.statDescriptionPositive,
-          ]}
-        >
-          {description}
-        </Text>
-      ) : null}
+      <Text style={styles.statLabel}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -202,14 +186,13 @@ export function ContractorTabs<
         return (
           <Pressable
             key={item.value}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            hitSlop={8}
             onPress={() =>
               onChange(item.value)
             }
-            style={[
-              styles.tab,
-              active &&
-                styles.tabActive,
-            ]}
+            style={styles.tab}
           >
             <Text
               style={[
@@ -250,18 +233,13 @@ export function ConfirmModal({
   onConfirm,
 }: ConfirmModalProps) {
   return (
-    <Modal
+    <AppModal
       visible={open}
-      transparent
       animationType="fade"
       onRequestClose={
         busy ? undefined : onClose
       }
     >
-      <View
-        style={styles.modalBackdrop}
-      >
-        <View style={styles.modal}>
           <Text
             style={styles.modalTitle}
           >
@@ -315,9 +293,7 @@ export function ConfirmModal({
               </Text>
             </Pressable>
           </View>
-        </View>
-      </View>
-    </Modal>
+    </AppModal>
   );
 }
 
@@ -430,91 +406,60 @@ const styles =
 
     statCard: {
       width: 158,
-      minHeight: 126,
-      padding: 16,
-      borderRadius: 12,
+      minHeight: 50,
+      padding: 12,
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      gap: 4,
+      borderWidth: 1,
+      borderColor: '#c5c4bc',
+      borderRadius: 6,
       backgroundColor: '#ffffff',
     },
 
     statLabel: {
-      color: '#737373',
-      fontFamily:
-        'Roboto_400Regular',
-      fontSize: 12,
-      lineHeight: 16,
-    },
-
-    statValue: {
-      marginTop: 8,
-      color: '#191919',
-      fontFamily:
-        'Roboto_500Medium',
-      fontSize: 30,
-      lineHeight: 34,
-    },
-
-    statDescription: {
-      marginTop: 'auto',
-      paddingTop: 8,
-      color: '#737373',
-      fontFamily:
-        'Roboto_400Regular',
-      fontSize: 11,
-      lineHeight: 15,
-    },
-
-    statDescriptionPositive: {
-      color: '#2e8b57',
-    },
-
-    tabs: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: '#d9d9d9',
-    },
-
-    tab: {
-      flex: 1,
-      minHeight: 48,
-      paddingHorizontal: 4,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderBottomWidth: 2,
-      borderBottomColor:
-        'transparent',
-    },
-
-    tabActive: {
-      borderBottomColor: '#191919',
-    },
-
-    tabText: {
+      flexShrink: 1,
       color: '#808080',
       fontFamily:
         'Roboto_400Regular',
       fontSize: 12,
       lineHeight: 16,
-      textAlign: 'center',
+      includeFontPadding: false,
+    },
+
+    statValue: {
+      color: '#191919',
+      fontFamily:
+        'Roboto_500Medium',
+      fontSize: 20,
+      lineHeight: 24,
+      includeFontPadding: false,
+    },
+
+    tabs: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 12,
+    },
+
+    tab: {
+      minHeight: 20,
+      justifyContent: 'center',
+    },
+
+    tabText: {
+      color: '#808080',
+      fontFamily:
+        'Roboto_500Medium',
+      fontSize: 16,
+      lineHeight: 20,
+      includeFontPadding: false,
     },
 
     tabTextActive: {
       color: '#191919',
       fontFamily:
         'Roboto_500Medium',
-    },
-
-    modalBackdrop: {
-      flex: 1,
-      padding: 20,
-      justifyContent: 'center',
-      backgroundColor:
-        'rgba(0,0,0,0.45)',
-    },
-
-    modal: {
-      padding: 24,
-      borderRadius: 16,
-      backgroundColor: '#ffffff',
     },
 
     modalTitle: {

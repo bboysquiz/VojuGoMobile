@@ -14,6 +14,7 @@ import {
 import {
   Linking,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -22,6 +23,7 @@ import {
 import {
   SafeAreaView,
 } from 'react-native-safe-area-context';
+import { useResponsiveLayout } from '../../../hooks/use-responsive-layout';
 
 import {
   getSelf,
@@ -127,6 +129,7 @@ export function CabinetShell({
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const { isLandscape } = useResponsiveLayout();
 
   const [
     user,
@@ -192,10 +195,11 @@ export function CabinetShell({
 
   return (
     <SafeAreaView
-      edges={['top']}
+      edges={['bottom']}
       style={styles.safeArea}
     >
-      <View style={styles.header}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.frame}>
+      <View style={[styles.header, isLandscape && styles.headerLandscape]}>
         <Image
           source={require(
             '../../../../assets/landing/logo_mobile.svg'
@@ -271,8 +275,9 @@ export function CabinetShell({
         </View>
 
         {menuOpen ? (
-          <View
+          <ScrollView
             style={styles.menu}
+            contentContainerStyle={styles.menuContent}
           >
             <Pressable
               style={styles.user}
@@ -302,7 +307,7 @@ export function CabinetShell({
 
             <View
               style={
-                styles.navigation
+                [styles.navigation, isLandscape && styles.navigationLandscape]
               }
             >
               {navigation.map(
@@ -397,9 +402,10 @@ export function CabinetShell({
                 info@vozhugo.ru
               </Text>
             </View>
-          </View>
+          </ScrollView>
         ) : null}
       </View>
+      </SafeAreaView>
     </SafeAreaView>
   );
 }
@@ -409,7 +415,12 @@ const styles =
     safeArea: {
       flex: 1,
       backgroundColor:
-        '#ffffff',
+        '#f1f1f1',
+    },
+
+    frame: {
+      flex: 1,
+      backgroundColor: '#ffffff',
     },
 
     header: {
@@ -431,8 +442,8 @@ const styles =
     },
 
     menuButton: {
-      width: 24,
-      height: 24,
+      width: 44,
+      height: 44,
 
       justifyContent:
         'center',
@@ -490,6 +501,9 @@ const styles =
      */
     content: {
       flex: 1,
+      width: '100%',
+      maxWidth: 1040,
+      alignSelf: 'center',
       backgroundColor:
         '#f1f1f1',
     },
@@ -508,11 +522,18 @@ const styles =
 
       zIndex: 100,
 
-      padding: 16,
-
       backgroundColor:
         '#f1f1f1',
     },
+
+    menuContent: {
+      flexGrow: 1,
+      padding: 16,
+      gap: 16,
+    },
+
+    headerLandscape: { height: 48 },
+    navigationLandscape: { marginTop: 0 },
 
     user: {
       width: '100%',
@@ -556,6 +577,7 @@ const styles =
     },
 
     navigationItem: {
+      width: '100%',
       minHeight: 48,
 
       paddingHorizontal: 16,
@@ -588,13 +610,11 @@ const styles =
     },
 
     contacts: {
-      position: 'absolute',
-
-      right: 16,
-      bottom: 8,
-      left: 16,
+      marginTop: 'auto',
+      paddingTop: 16,
 
       flexDirection: 'row',
+      flexWrap: 'wrap',
       alignItems: 'center',
 
       gap: 8,

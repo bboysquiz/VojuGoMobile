@@ -1,9 +1,10 @@
 {
   "expo": {
-    "name": "vojugo-mobile",
+    "name": "Вожуго",
+    "owner": "bboysquizs-team",
     "slug": "vojugo-mobile",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "vojugomobile",
     "userInterfaceStyle": "automatic",
@@ -11,6 +12,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "ru.vozhugo.mobile",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -40,6 +42,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c601c155-e58f-486f-9f22-7ad4e3dbbc00"
+      }
     }
   }
 }

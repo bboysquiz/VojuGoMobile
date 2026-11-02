@@ -378,6 +378,7 @@ export default function CustomerOrdersPage() {
                   onChoose={(responseId) =>
                     void handleChoose(order.id, responseId)
                   }
+                  onEdit={() => router.push({ pathname: '/cabinet/customer/orders/[orderId]/edit', params: { orderId: order.id } })}
                   onDelete={() => {
                     setActionError('');
                     setDeleteOrderId(order.id);

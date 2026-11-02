@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 
 import { AuthCodeInput } from '../features/auth/components/AuthCodeInput';
 
@@ -31,6 +32,7 @@ const RESEND_COOLDOWN_SECONDS = 18;
 
 export default function VerifyPhoneScreen() {
   const router = useRouter();
+  const { isLandscape } = useResponsiveLayout();
 
   const params = useLocalSearchParams<{
     phone?: string;
@@ -182,7 +184,7 @@ export default function VerifyPhoneScreen() {
               />
             </View>
 
-            <View style={styles.body}>
+            <View style={[styles.body, isLandscape && styles.bodyLandscape]}>
               <Image
                 source={require(
                   '../../assets/landing/logo_mobile.svg'
@@ -282,6 +284,8 @@ const styles = StyleSheet.create({
 
   card: {
     width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
 
     overflow: 'hidden',
 
@@ -314,6 +318,12 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
 
     gap: 32,
+  },
+
+  bodyLandscape: {
+    minHeight: 0,
+    paddingVertical: 20,
+    gap: 16,
   },
 
   logo: {

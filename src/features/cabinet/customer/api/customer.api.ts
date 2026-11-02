@@ -1,16 +1,22 @@
-import { apiRequest } from '../../../../shared/api/http';
-
-import type {
-  ApiVehicle,
-  ContractorRatingSummary,
-  CustomerDashboard,
-  CustomerOrder,
-  CustomerOrderList,
-  CustomerOrderResponse,
-  CustomerOrderResponseList,
-  CustomerOrderStatistics,
-  CustomerOrderStatus,
-  OrderReviewFields,
+import { ApiError, apiRequest } from '../../../../shared/api/http';
+import { getSelf } from '../../../auth/api/auth.api';
+import type { CustomerOrderPayload, VehicleTypeOption } from '../model/customer-order-form';
+import {
+  getVehicleTypeLabel,
+  type CustomerHistory,
+  type CustomerHistoryOrder,
+  type OrderReview,
+  type VehicleType,
+  type ApiVehicle,
+  type ContractorRatingSummary,
+  type CustomerDashboard,
+  type CustomerOrder,
+  type CustomerOrderList,
+  type CustomerOrderResponse,
+  type CustomerOrderResponseList,
+  type CustomerOrderStatistics,
+  type CustomerOrderStatus,
+  type OrderReviewFields,
 } from '../model/customer.types';
 
 const ORDERS_PAGE_LIMIT = 100;
@@ -39,7 +45,7 @@ async function getAllCustomerOrders(
     orders.push(...page.items);
     cursor = page.has_more ? page.next_cursor : undefined;
 
-    if (page.has_more && cursor === undefined) {
+    if (page.has_more && !cursor) {
       throw new Error('Сервер не вернул курсор следующей страницы заявок');
     }
   } while (cursor !== undefined);
@@ -188,4 +194,101 @@ export function completeCustomerOrder(
       },
     },
   );
+}
+
+export async function getCustomerVehicleTypes(): Promise<VehicleTypeOption[]> {
+  const response = await apiRequest<{ items: { id: string }[] }>('/vehicle-types', { method: 'GET' });
+  const knownTypes: VehicleType[] = ['crane_truck', 'backhoe_loader', 'dump_truck', 'tractor', 'aerial_platform', 'mini_loader', 'tow_truck'];
+  return knownTypes.filter((type) => response.items.some(({ id }) => id === type))
+    .map((value) => ({ value, label: getVehicleTypeLabel(value) }));
+}
+
+export function createCustomerOrder(payload: CustomerOrderPayload) {
+  return apiRequest<CustomerOrder>('/orders', { method: 'POST', body: payload });
+}
+
+export function updateCustomerOrder(orderId: string, payload: CustomerOrderPayload) {
+  return apiRequest<CustomerOrder>('/orders/' + encodeURIComponent(orderId), { method: 'PUT', body: payload });
+}
+
+export async function ensureCustomerOrderEditable(orderId: string) {
+  const [order, responses] = await Promise.all([
+    getCustomerOrder(orderId),
+    apiRequest<CustomerOrderResponseList>('/orders/' + encodeURIComponent(orderId) + '/responses', { method: 'GET' }),
+  ]);
+  if (order.status !== 'OPEN' || responses.items.length > 0) {
+    throw new Error('На заявку уже откликнулись — редактирование недоступно');
+  }
+  return order;
+}
+
+export function saveCustomerOrderReview(orderId: string, fields: OrderReviewFields, existing: boolean) {
+  return apiRequest<OrderReview>('/orders/' + encodeURIComponent(orderId) + '/review', {
+    method: existing ? 'PUT' : 'POST', body: fields,
+  });
+}
+
+async function getOrderReview(orderId: string): Promise<OrderReview | null> {
+  try {
+    return await apiRequest<OrderReview>('/orders/' + encodeURIComponent(orderId) + '/review', { method: 'GET' });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+async function getContractorHistoryNames(contractorId: string) {
+  const orders: { id: string; contractor_name?: string | null }[] = [];
+  let cursor: string | undefined;
+  do {
+    const params = new URLSearchParams({ limit: '100' });
+    if (cursor) params.set('cursor', cursor);
+    const page = await apiRequest<{
+      items: typeof orders; has_more: boolean; next_cursor?: string;
+    }>('/contractors/' + encodeURIComponent(contractorId) + '/orders?' + params, { method: 'GET' });
+    orders.push(...page.items);
+    cursor = page.has_more ? page.next_cursor : undefined;
+    if (page.has_more && !cursor) throw new Error('Сервер не вернул курсор истории исполнителя');
+  } while (cursor);
+  return orders;
+}
+
+export async function getCustomerHistory(): Promise<CustomerHistory> {
+  const [orders, user] = await Promise.all([getAllCustomerOrders(['COMPLETED', 'CANCELLED']), getSelf()]);
+  const contractorRequests = new Map<string, ReturnType<typeof getContractorHistoryNames>>();
+  const enriched = new Array<CustomerHistoryOrder>(orders.length);
+  let next = 0;
+
+  // Bound simultaneous requests when the customer's history contains many orders.
+  async function worker() {
+    while (next < orders.length) {
+      const index = next++;
+      const order = orders[index];
+      const [responseList, review] = await Promise.all([
+        apiRequest<CustomerOrderResponseList>('/orders/' + encodeURIComponent(order.id) + '/responses', { method: 'GET' }),
+        order.status === 'COMPLETED' ? getOrderReview(order.id) : Promise.resolve(null),
+      ]);
+      const contractorId = order.contractor_id || review?.reviewee_id;
+      const chosen = contractorId
+        ? responseList.items.find((response) => response.contractor_id === contractorId)
+        : responseList.items.find((response) => response.status === 'chosen' || response.status === 'completed');
+      let contractorName = chosen?.contractor_name?.trim() || chosen?.contractor_company_name?.trim() || null;
+      if (!contractorName && contractorId && order.status === 'COMPLETED') {
+        let request = contractorRequests.get(contractorId);
+        if (!request) {
+          request = getContractorHistoryNames(contractorId);
+          contractorRequests.set(contractorId, request);
+        }
+        contractorName = (await request).find(({ id }) => id === order.id)?.contractor_name?.trim() || null;
+      }
+      enriched[index] = { ...order, contractor_name: contractorName, reviewer_name: user.name || user.company_name || 'Заказчик', review };
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(6, orders.length) }, worker));
+  const completed = enriched.filter(({ status }) => status === 'COMPLETED');
+  const cancelled = enriched.filter(({ status }) => status === 'CANCELLED');
+  return {
+    summary: { completed_orders: completed.length, cancelled_orders: cancelled.length, ratings_count: completed.filter(({ review }) => review?.rating != null).length },
+    completed_orders: completed, cancelled_orders: cancelled,
+  };
 }

@@ -1,5 +1,7 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { ResponsiveGrid } from '../../../components/responsive-grid';
+import { AppModal } from '../../../components/app-modal';
 
 import {
   useEffect,
@@ -8,7 +10,6 @@ import {
 
 import {
   Linking,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -57,9 +58,6 @@ export function ProfileScreen({
   const [phone, setPhone] =
     useState('');
 
-  const [email, setEmail] =
-    useState('');
-
   const [
     telegramLinked,
     setTelegramLinked,
@@ -106,8 +104,6 @@ export function ProfileScreen({
       );
 
       setPhone(user.phone);
-
-      setEmail(user.email ?? '');
 
       setTelegramLinked(
         user.telegram_linked === true
@@ -198,6 +194,7 @@ export function ProfileScreen({
   return (
     <>
       <ScrollView
+        automaticallyAdjustKeyboardInsets
         style={styles.screen}
         contentContainerStyle={
           styles.content
@@ -217,7 +214,7 @@ export function ProfileScreen({
             {title}
           </Text>
 
-          <View style={styles.fields}>
+          <ResponsiveGrid style={styles.fields}>
             <ProfileField
               label="Имя или название"
               value={name}
@@ -244,13 +241,7 @@ export function ProfileScreen({
               }}
             />
 
-            <ProfileField
-              label="Email"
-              value={email}
-              editable={false}
-              placeholder="Не указан"
-            />
-          </View>
+          </ResponsiveGrid>
 
           {error ? (
             <Text style={styles.error}>
@@ -292,7 +283,7 @@ export function ProfileScreen({
             style={styles.telegram}
             onPress={() =>
               void Linking.openURL(
-                'https://t.me/vozhugo'
+                'https://t.me/vozugo_bot'
               )
             }
           >
@@ -332,26 +323,14 @@ export function ProfileScreen({
         </View>
       </ScrollView>
 
-      <Modal
+      <AppModal
         visible={logoutOpen}
-        transparent
+        dismissOnBackdrop
         animationType="fade"
         onRequestClose={() =>
           setLogoutOpen(false)
         }
       >
-        <Pressable
-          style={styles.modalBackdrop}
-          onPress={() =>
-            setLogoutOpen(false)
-          }
-        >
-          <Pressable
-            style={styles.modal}
-            onPress={(event) =>
-              event.stopPropagation()
-            }
-          >
             <Text
               style={styles.modalTitle}
             >
@@ -402,9 +381,7 @@ export function ProfileScreen({
                 </Text>
               </Pressable>
             </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </AppModal>
     </>
   );
 }
@@ -496,7 +473,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
 
-    width: '100%',
     height: 8,
   },
 
@@ -645,28 +621,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto_400Regular',
     fontSize: 14,
     lineHeight: 20,
-  },
-
-  modalBackdrop: {
-    flex: 1,
-
-    padding: 20,
-
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    backgroundColor:
-      'rgba(30, 35, 40, 0.5)',
-  },
-
-  modal: {
-    width: '100%',
-    maxWidth: 342,
-
-    padding: 20,
-
-    borderRadius: 12,
-    backgroundColor: '#ffffff',
   },
 
   modalTitle: {

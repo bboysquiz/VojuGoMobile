@@ -12,9 +12,12 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ResponsiveGrid } from '../components/responsive-grid';
+import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 import { getSelf, login } from '../features/auth/api/auth.api';
 
 import { AuthInput } from '../features/auth/components/AuthInput';
+import { rememberRecoveryPhone } from '../features/auth/model/recovery-phone';
 import {
   isValidPhone,
   normalizePhoneInput,
@@ -22,6 +25,7 @@ import {
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { isLandscape } = useResponsiveLayout();
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -151,7 +155,7 @@ export default function LoginScreen() {
               />
             </View>
 
-            <View style={styles.body}>
+            <View style={[styles.body, isLandscape && styles.bodyLandscape]}>
               <Image
                 source={require(
                   '../../assets/landing/logo_mobile.svg'
@@ -164,7 +168,7 @@ export default function LoginScreen() {
                 Вход
               </Text>
 
-              <View style={styles.fields}>
+              <ResponsiveGrid style={styles.fields}>
                 <AuthInput
                   label="Телефон"
                   value={phone}
@@ -189,7 +193,7 @@ export default function LoginScreen() {
                   returnKeyType="done"
                   onSubmitEditing={handleLogin}
                 />
-              </View>
+              </ResponsiveGrid>
 
               <Pressable
                 accessibilityRole="button"
@@ -205,6 +209,15 @@ export default function LoginScreen() {
                 >
                   Войти
                 </Text>
+              </Pressable>
+
+              <Pressable accessibilityRole="button" style={styles.recoveryLink}
+                onPress={() => {
+                  rememberRecoveryPhone(phone);
+                  setPassword('');
+                  router.push('/forgot-password');
+                }}>
+                <Text style={styles.noAccount}>Забыли пароль?</Text>
               </Pressable>
 
               <Text style={styles.noAccount}>
@@ -272,6 +285,8 @@ const styles = StyleSheet.create({
 
   card: {
     width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
 
     overflow: 'hidden',
 
@@ -304,6 +319,13 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
 
     gap: 32,
+  },
+
+  bodyLandscape: {
+    minHeight: 0,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    gap: 16,
   },
 
   logo: {
@@ -385,4 +407,5 @@ const styles = StyleSheet.create({
   registrationLink: {
     textDecorationLine: 'underline',
   },
+  recoveryLink: { minHeight: 44, justifyContent: 'center', alignItems: 'center' },
 });

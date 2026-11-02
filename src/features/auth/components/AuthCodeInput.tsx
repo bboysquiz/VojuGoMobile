@@ -19,6 +19,8 @@ interface AuthCodeInputProps {
   error?: string;
   disabled?: boolean;
   length?: number;
+  autoFocus?: boolean;
+  appearance?: 'default' | 'recovery';
 }
 
 export function AuthCodeInput({
@@ -28,9 +30,11 @@ export function AuthCodeInput({
   error = '',
   disabled = false,
   length = 4,
+  autoFocus = false,
+  appearance = 'default',
 }: AuthCodeInputProps) {
   const inputs =
-    useRef<Array<TextInput | null>>([]);
+    useRef<(TextInput | null)[]>([]);
 
   const [
     focusedIndex,
@@ -64,14 +68,14 @@ export function AuthCodeInput({
     const current = Array.from(
       { length },
       (_, index) =>
-        value[index] ?? ''
+        value[index]?.trim() || ' '
     );
 
     if (!digits) {
-      current[startIndex] = '';
+      current[startIndex] = ' ';
 
       onChange(
-        current.join('')
+        current.join('').trimEnd()
       );
 
       return;
@@ -95,12 +99,12 @@ export function AuthCodeInput({
 
     const nextCode = current
       .join('')
-      .slice(0, length);
+      .slice(0, length).trimEnd();
 
     onChange(nextCode);
 
     if (
-      nextCode.length === length
+      new RegExp(`^\\d{${length}}$`).test(nextCode)
     ) {
       inputs.current[
         length - 1
@@ -124,7 +128,7 @@ export function AuthCodeInput({
     if (
       event.nativeEvent.key ===
         'Backspace' &&
-      !value[index] &&
+      !value[index]?.trim() &&
       index > 0
     ) {
       const current =
@@ -133,13 +137,13 @@ export function AuthCodeInput({
           (_, currentIndex) =>
             value[
               currentIndex
-            ] ?? ''
+            ]?.trim() || ' '
         );
 
-      current[index - 1] = '';
+      current[index - 1] = ' ';
 
       onChange(
-        current.join('')
+        current.join('').trimEnd()
       );
 
       focusInput(index - 1);
@@ -148,7 +152,7 @@ export function AuthCodeInput({
 
   return (
     <View style={styles.container}>
-      <View style={styles.controls}>
+      <View style={[styles.controls, appearance === 'recovery' && styles.recoveryControls]}>
         {Array.from({
           length,
         }).map((_, index) => (
@@ -160,9 +164,12 @@ export function AuthCodeInput({
               ] = element;
             }}
             value={
-              value[index] ?? ''
+              value[index]?.trim() ?? ''
             }
             editable={!disabled}
+            autoFocus={autoFocus && index === 0}
+            accessibilityLabel={`Цифра ${index + 1}`}
+            autoComplete={index === 0 ? 'one-time-code' : 'off'}
             keyboardType="number-pad"
             textContentType={
               index === 0
@@ -171,7 +178,7 @@ export function AuthCodeInput({
             }
             maxLength={length}
             selectTextOnFocus
-            caretHidden
+            caretHidden={appearance !== 'recovery'}
             onFocus={() =>
               setFocusedIndex(
                 index
@@ -281,4 +288,5 @@ const styles = StyleSheet.create({
 
     includeFontPadding: false,
   },
+  recoveryControls: { gap: 8 },
 });

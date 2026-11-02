@@ -26,18 +26,26 @@ interface ApiRequestOptions
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
+  readonly retryAfterSeconds?: number;
 
   constructor(
     message: string,
     code: string,
-    status: number
+    status: number,
+    retryAfterSeconds?: number
   ) {
     super(message);
 
     this.name = 'ApiError';
     this.code = code;
     this.status = status;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
+}
+
+export function isAbortError(error: unknown): boolean {
+  return typeof error === 'object' && error !== null &&
+    'name' in error && error.name === 'AbortError';
 }
 
 function getApiUrl(path: string) {
@@ -207,7 +215,8 @@ export async function apiRequest<T>(
         response = await execute();
       }
     }
-  } catch {
+  } catch (error) {
+    if (isAbortError(error)) throw error;
     throw new ApiError(
       'Соединение прервано. Попробуйте снова',
       'NETWORK_ERROR',
@@ -225,11 +234,17 @@ export async function apiRequest<T>(
         ? (responseBody as ApiErrorBody)
         : null;
 
+    const retryAfter = response.headers.get('Retry-After');
+    const seconds = retryAfter === null ? NaN : /^\d+$/.test(retryAfter.trim())
+      ? Number(retryAfter)
+      : Math.ceil((Date.parse(retryAfter) - Date.now()) / 1000);
+
     throw new ApiError(
       error?.message ||
         'Ошибка при выполнении запроса',
       error?.code || 'HTTP_ERROR',
-      response.status
+      response.status,
+      Number.isFinite(seconds) ? Math.max(0, seconds) : undefined
     );
   }
 

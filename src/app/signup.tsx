@@ -24,6 +24,8 @@ import {
 import { register } from '../features/auth/api/auth.api';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ResponsiveGrid } from '../components/responsive-grid';
+import { useResponsiveLayout } from '../hooks/use-responsive-layout';
 
 import { AuthInput } from '../features/auth/components/AuthInput';
 
@@ -38,6 +40,7 @@ type UserRole =
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const { isLandscape } = useResponsiveLayout();
 
   const params = useLocalSearchParams<{
     role?: string;
@@ -297,7 +300,7 @@ export default function SignUpScreen() {
               />
             </View>
 
-            <View style={styles.body}>
+            <View style={[styles.body, isLandscape && styles.bodyLandscape]}>
               <Image
                 source={require(
                   '../../assets/landing/logo_mobile.svg'
@@ -374,7 +377,7 @@ export default function SignUpScreen() {
                 </Pressable>
               </View>
 
-              <View
+              <ResponsiveGrid
                 style={styles.fields}
               >
                 <AuthInput
@@ -440,7 +443,7 @@ export default function SignUpScreen() {
                     handleRegistration
                   }
                 />
-              </View>
+              </ResponsiveGrid>
 
               <View
                 style={
@@ -596,6 +599,8 @@ const styles =
 
     card: {
       width: '100%',
+      maxWidth: 720,
+      alignSelf: 'center',
 
       overflow: 'hidden',
 
@@ -627,6 +632,12 @@ const styles =
       paddingBottom: 40,
 
       gap: 32,
+    },
+
+    bodyLandscape: {
+      paddingVertical: 20,
+      paddingHorizontal: 24,
+      gap: 16,
     },
 
     logo: {

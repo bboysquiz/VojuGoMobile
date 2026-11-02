@@ -183,6 +183,7 @@ export default function ContractorEditVehiclePage() {
 
   return (
     <ScrollView
+      automaticallyAdjustKeyboardInsets
       keyboardShouldPersistTaps="handled"
       style={styles.screen}
       contentContainerStyle={

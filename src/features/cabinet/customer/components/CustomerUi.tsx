@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import {
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { AppModal } from '../../../../components/app-modal';
 
 interface StateProps {
   message: string;
@@ -44,12 +44,14 @@ interface TabsProps<T extends string> {
   value: T;
   items: TabItem<T>[];
   onChange: (value: T) => void;
+  variant?: 'default' | 'text';
 }
 
 export function CustomerTabs<T extends string>({
   value,
   items,
   onChange,
+  variant = 'default',
 }: TabsProps<T>) {
   return (
     <ScrollView
@@ -64,17 +66,20 @@ export function CustomerTabs<T extends string>({
           <Pressable
             key={item.value}
             onPress={() => onChange(item.value)}
-            style={[styles.tab, active && styles.tabActive]}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            style={[styles.tab, active && styles.tabActive, variant === 'text' && styles.textTab]}
           >
             <Text style={[styles.tabText, active && styles.tabTextActive]}>
               {item.label}
             </Text>
 
-            <View style={[styles.tabCount, active && styles.tabCountActive]}>
+            <View style={[styles.tabCount, active && styles.tabCountActive, variant === 'text' && styles.textTabCount, variant === 'text' && active && styles.textTabCountActive]}>
               <Text
                 style={[
                   styles.tabCountText,
                   active && styles.tabCountTextActive,
+                  variant === 'text' && styles.textTabCountText,
                 ]}
               >
                 {item.count}
@@ -130,14 +135,11 @@ export function CustomerConfirmModal({
   onConfirm,
 }: ConfirmProps) {
   return (
-    <Modal
-      transparent
+    <AppModal
       visible={open}
       animationType="fade"
       onRequestClose={busy ? undefined : onClose}
     >
-      <View style={styles.backdrop}>
-        <View style={styles.modal}>
           <Text style={styles.modalTitle}>{title}</Text>
           <Text style={styles.modalDescription}>{description}</Text>
 
@@ -164,9 +166,7 @@ export function CustomerConfirmModal({
               </Text>
             </Pressable>
           </View>
-        </View>
-      </View>
-    </Modal>
+    </AppModal>
   );
 }
 
@@ -187,6 +187,8 @@ export function CustomerActionButton({
 }: ActionButtonProps) {
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
       style={[
@@ -259,6 +261,10 @@ const styles = StyleSheet.create({
   tabActive: {
     borderBottomColor: '#191919',
   },
+  textTab: { borderBottomWidth: 0 },
+  textTabCount: { backgroundColor: '#f3f3f3' },
+  textTabCountActive: { backgroundColor: '#ffdc3c' },
+  textTabCountText: { color: '#191919', fontFamily: 'Roboto_400Regular' },
   tabText: {
     color: '#808080',
     fontFamily: 'Roboto_400Regular',
@@ -307,17 +313,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto_400Regular',
     fontSize: 14,
     lineHeight: 20,
-  },
-  backdrop: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  modal: {
-    padding: 24,
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
   },
   modalTitle: {
     color: '#191919',
@@ -374,6 +369,8 @@ const styles = StyleSheet.create({
   actionButton: {
     width: '100%',
     minHeight: 56,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
@@ -392,6 +389,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto_500Medium',
     fontSize: 14,
     lineHeight: 18,
+    textAlign: 'center',
   },
   actionButtonOutlineText: {
     color: '#191919',

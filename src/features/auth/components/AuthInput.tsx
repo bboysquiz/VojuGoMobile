@@ -18,6 +18,8 @@ type AuthInputProps = Omit<
   value: string;
   onChangeText: (value: string) => void;
   error?: string;
+  hint?: string;
+  appearance?: 'default' | 'recovery';
 };
 
 export function AuthInput({
@@ -25,6 +27,8 @@ export function AuthInput({
   value,
   onChangeText,
   error = '',
+  hint = '',
+  appearance = 'default',
   secureTextEntry = false,
   style,
   ...inputProps
@@ -62,6 +66,7 @@ export function AuthInput({
 
         <TextInput
           {...inputProps}
+          accessibilityLabel={inputProps.accessibilityLabel ?? label}
           value={value}
           onChangeText={handleChangeText}
           placeholder={
@@ -83,6 +88,7 @@ export function AuthInput({
           }
           style={[
             styles.input,
+            appearance === 'recovery' && !isFilled && styles.recoveryPlaceholder,
 
             isFilled &&
               styles.inputFilled,
@@ -110,6 +116,8 @@ export function AuthInput({
                 ? 'Скрыть пароль'
                 : 'Показать пароль'
             }
+            disabled={inputProps.editable === false}
+            accessibilityState={{ disabled: inputProps.editable === false, expanded: isPasswordVisible }}
             onPress={() =>
               setIsPasswordVisible(
                 (current) =>
@@ -122,9 +130,9 @@ export function AuthInput({
             }
           >
             <Image
-              source={require(
-                '../../../../assets/landing/show-password.svg'
-              )}
+              source={appearance === 'recovery'
+                ? require('../../../../assets/auth/recovery-show-password.svg')
+                : require('../../../../assets/landing/show-password.svg')}
               style={
                 styles.passwordIcon
               }
@@ -134,9 +142,10 @@ export function AuthInput({
         ) : null}
       </View>
 
-      {error ? (
-        <Text style={styles.errorText}>
-          {error}
+      {error || hint ? (
+        <Text accessibilityRole={error ? 'alert' : undefined}
+          style={[styles.hint, Boolean(error) && styles.errorText]}>
+          {error || hint}
         </Text>
       ) : null}
     </View>
@@ -234,4 +243,8 @@ const styles = StyleSheet.create({
 
     includeFontPadding: false,
   },
+  hint: {
+    color: '#808080', fontFamily: 'Roboto_400Regular', fontSize: 14, lineHeight: 18,
+  },
+  recoveryPlaceholder: { fontSize: 18 },
 });

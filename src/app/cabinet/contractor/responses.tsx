@@ -464,6 +464,7 @@ export default function ContractorResponsesPage() {
           <>
             <ScrollView
               horizontal
+              style={styles.statsScroll}
               showsHorizontalScrollIndicator={
                 false
               }
@@ -476,14 +477,11 @@ export default function ContractorResponsesPage() {
                 value={
                   responsesToday
                 }
-                description="заказчик ещё не выбрал исполнителя"
               />
 
               <ContractorStatCard
                 label="выбрали вас"
                 value={chosenCount}
-                description="заказчик выбрал вас"
-                positive
               />
 
               <ContractorStatCard
@@ -700,6 +698,10 @@ const styles =
     content: {
       padding: 16,
       paddingBottom: 32,
+    },
+
+    statsScroll: {
+      marginRight: -16,
     },
 
     stats: {

@@ -1,12 +1,5 @@
-import { View } from 'react-native';
+import { CustomerOrderEditorScreen } from '../../../features/cabinet/customer/components/CustomerOrderEditorScreen';
 
-export default function Page() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#ffffff',
-      }}
-    />
-  );
+export default function CustomerNewOrderPage() {
+  return <CustomerOrderEditorScreen />;
 }

@@ -1,13 +1,12 @@
 import {
-  Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { AppModal } from '../../../../components/app-modal';
+import { ResponsiveGrid } from '../../../../components/responsive-grid';
 
 import {
   useEffect,
@@ -88,28 +87,14 @@ function SelectField({
         </Text>
       </Pressable>
 
-      <Modal
+      <AppModal
         visible={open}
-        transparent
+        dismissOnBackdrop
         animationType="fade"
         onRequestClose={() =>
           setOpen(false)
         }
       >
-        <Pressable
-          onPress={() =>
-            setOpen(false)
-          }
-          style={
-            styles.selectBackdrop
-          }
-        >
-          <Pressable
-            onPress={() => {}}
-            style={
-              styles.selectModal
-            }
-          >
             <Text
               style={
                 styles.selectModalTitle
@@ -118,11 +103,6 @@ function SelectField({
               {label}
             </Text>
 
-            <ScrollView
-              style={
-                styles.selectOptions
-              }
-            >
               {options.map(
                 (option) => (
                   <Pressable
@@ -159,10 +139,7 @@ function SelectField({
                   </Pressable>
                 )
               )}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </AppModal>
     </View>
   );
 }
@@ -183,10 +160,13 @@ function BooleanField({
   onChange,
 }: BooleanFieldProps) {
   return (
-    <View
-      style={
-        styles.booleanField
-      }
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: value, disabled }}
+      disabled={disabled}
+      onPress={() => onChange(!value)}
+      style={[styles.booleanField, disabled && styles.disabled]}
     >
       <Text
         style={
@@ -196,12 +176,10 @@ function BooleanField({
         {label}
       </Text>
 
-      <Switch
-        value={value}
-        disabled={disabled}
-        onValueChange={onChange}
-      />
-    </View>
+      <View style={[styles.booleanTrack, value && styles.booleanTrackChecked]}>
+        <View style={[styles.booleanThumb, value && styles.booleanThumbChecked]} />
+      </View>
+    </Pressable>
   );
 }
 
@@ -401,7 +379,7 @@ export function ContractorVehicleForm({
 
       {type ===
       'crane_truck' ? (
-        <>
+        <ResponsiveGrid minColumnWidth={180} maxColumns={3}>
           <SelectField
             label="Грузоподъёмность борта"
             value={String(
@@ -466,7 +444,7 @@ export function ContractorVehicleForm({
               )
             }
           />
-        </>
+        </ResponsiveGrid>
       ) : null}
 
       {type ===
@@ -569,6 +547,7 @@ export function ContractorVehicleForm({
         </View>
       ) : null}
 
+      <ResponsiveGrid>
       <View style={styles.field}>
         <Text style={styles.label}>
           Модель
@@ -615,6 +594,8 @@ export function ContractorVehicleForm({
           style={styles.input}
         />
       </View>
+
+      </ResponsiveGrid>
 
       {validationError ||
       errorMessage ? (
@@ -735,21 +716,6 @@ const styles =
       fontSize: 10,
     },
 
-    selectBackdrop: {
-      flex: 1,
-      padding: 20,
-      justifyContent: 'center',
-      backgroundColor:
-        'rgba(0,0,0,0.45)',
-    },
-
-    selectModal: {
-      maxHeight: '70%',
-      padding: 20,
-      borderRadius: 16,
-      backgroundColor: '#ffffff',
-    },
-
     selectModalTitle: {
       marginBottom: 12,
       color: '#191919',
@@ -757,10 +723,6 @@ const styles =
         'Roboto_500Medium',
       fontSize: 18,
       lineHeight: 22,
-    },
-
-    selectOptions: {
-      flexGrow: 0,
     },
 
     selectOption: {
@@ -798,15 +760,44 @@ const styles =
       minHeight: 52,
       flexDirection: 'row',
       alignItems: 'center',
+      gap: 12,
       justifyContent:
         'space-between',
     },
 
     booleanLabel: {
+      flex: 1,
       color: '#191919',
       fontFamily:
         'Roboto_400Regular',
       fontSize: 15,
+    },
+
+    booleanTrack: {
+      width: 48,
+      height: 28,
+      flexShrink: 0,
+      padding: 3,
+      borderRadius: 14,
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+      backgroundColor: '#c5c4bc',
+    },
+
+    booleanTrackChecked: {
+      alignItems: 'flex-end',
+      backgroundColor: '#ffdc3c',
+    },
+
+    booleanThumb: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: '#ffffff',
+    },
+
+    booleanThumbChecked: {
+      backgroundColor: '#191919',
     },
 
     errorBox: {
