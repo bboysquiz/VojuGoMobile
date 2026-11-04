@@ -7,8 +7,8 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  type NativeSyntheticEvent,
-  type TextInputKeyPressEventData,
+  type TextInputInstance,
+  type TextInputKeyPressEvent,
   View,
 } from 'react-native';
 
@@ -34,7 +34,7 @@ export function AuthCodeInput({
   appearance = 'default',
 }: AuthCodeInputProps) {
   const inputs =
-    useRef<(TextInput | null)[]>([]);
+    useRef<(TextInputInstance | null)[]>([]);
 
   const [
     focusedIndex,
@@ -122,7 +122,7 @@ export function AuthCodeInput({
   }
 
   function handleKeyPress(
-    event: NativeSyntheticEvent<TextInputKeyPressEventData>,
+    event: TextInputKeyPressEvent,
     index: number
   ) {
     if (
