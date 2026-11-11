@@ -279,6 +279,23 @@ export function ProfileScreen({
         </View>
 
         <View style={styles.account}>
+          {role === 'contractor' ? (
+            <Pressable accessibilityRole="button" style={styles.navigationRow} onPress={() => router.navigate('/cabinet/contractor/vehicles')}>
+              <Image source={require('../../../../assets/navigation/nav-truck.svg')} style={styles.navigationIcon} contentFit="contain" />
+              <Text style={styles.accountTitle}>Моя техника</Text>
+            </Pressable>
+          ) : null}
+          <Pressable accessibilityRole="link" style={styles.navigationRow} onPress={() => void Linking.openURL('https://t.me/vozhugo')}>
+            <Image source={require('../../../../assets/navigation/support.svg')} style={styles.navigationIcon} contentFit="contain" />
+            <Text style={styles.accountTitle}>Поддержка</Text>
+          </Pressable>
+          <Pressable accessibilityRole="link" style={styles.navigationRow} onPress={() => void Linking.openURL('mailto:info@vozhugo.ru')}>
+            <Image source={require('../../../../assets/navigation/mail.svg')} style={styles.navigationIcon} contentFit="contain" />
+            <Text style={styles.accountTitle}>info@vozhugo.ru</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.account}>
           <Pressable
             style={styles.telegram}
             onPress={() =>
@@ -422,6 +439,8 @@ function ProfileField({
 }
 
 const styles = StyleSheet.create({
+  navigationRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  navigationIcon: { width: 24, height: 24 },
   screen: {
     flex: 1,
     backgroundColor: '#f1f1f1',

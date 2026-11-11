@@ -1,0 +1,9 @@
+[ 2228025ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:8080/s/selena/api/attendance/weekly?week_start=2026-11-09:1
+[ 2228033ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:8080/s/selena/api/notifications/counters:1
+[ 2228036ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:8080/s/selena/api/profile:1
+[ 2228085ms] [ERROR] Не удалось обновить счётчики заявок: AxiosError: Войдите в учетную запись.
+    at Gt (http://localhost:8080/assets/axios-ChQcgqbD.js:3:11860)
+    at XMLHttpRequest._ (http://localhost:8080/assets/axios-ChQcgqbD.js:3:18940)
+    at Z.request (http://localhost:8080/assets/axios-ChQcgqbD.js:5:2171)
+    at async Proxy.loadNotificationCounters (http://localhost:8080/assets/axios-ChQcgqbD.js:9:12120)
+    at async Ae (http://localhost:8080/assets/AccountLayout-CEFSoDMj.js:1:12188) @ http://localhost:8080/assets/AccountLayout-CEFSoDMj.js:1

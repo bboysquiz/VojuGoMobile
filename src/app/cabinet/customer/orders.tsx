@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 112,
   },
   title: {
     marginBottom: 20,

@@ -1,0 +1,10 @@
+[ 6123007ms] [ERROR] Failed to load resource: the server responded with a status of 409 () @ https://idmsa.apple.com/appleauth/auth/signin/complete?isRememberMeEnabled=true:1
+[ 6142382ms] [ERROR] Failed to load resource: the server responded with a status of 403 () @ https://idmsa.apple.com/IDMSWebAuth/signin:1
+[ 6159888ms] [ERROR] Access to font at 'https://www.apple.com/ac/globalfooter/7/ru_RU/assets/ac-footer/legacy/appleicons_text.woff' from origin 'https://idmsa.apple.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://idmsa.apple.com/signin.html?language=RU-RU&rv=0&path=/enroll/duns-lookup/?utm_source=chatgpt.com&appIdKey=891bd3417a7776362562d2197f89480a8547b108fd934911bcbea0110d07f757:1
+[ 6159888ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://www.apple.com/ac/globalfooter/7/ru_RU/assets/ac-footer/legacy/appleicons_text.woff:1
+[ 6159937ms] [ERROR] Access to font at 'https://www.apple.com/ac/globalfooter/7/ru_RU/assets/ac-footer/legacy/appleicons_text.ttf' from origin 'https://idmsa.apple.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://idmsa.apple.com/signin.html?language=RU-RU&rv=0&path=/enroll/duns-lookup/?utm_source=chatgpt.com&appIdKey=891bd3417a7776362562d2197f89480a8547b108fd934911bcbea0110d07f757:1
+[ 6159937ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://www.apple.com/ac/globalfooter/7/ru_RU/assets/ac-footer/legacy/appleicons_text.ttf:1
+[ 6160236ms] Uncaught TypeError: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'.
+    at <anonymous> (https://appleid.cdn-apple.com/appleauth/static/jsj/1913796087/boot/initBootData.js:213:34)
+    at <anonymous> (https://appleid.cdn-apple.com/appleauth/static/jsj/1913796087/boot/initBootData.js:215:3)
+[ 6164915ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ https://developer.apple.com/services-enrollment/getCaptcha:1

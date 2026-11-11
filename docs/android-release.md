@@ -20,13 +20,25 @@
 Номера сборок увеличиваются автоматически и хранятся в EAS.
 Сама сборка не запускает отправку в Google Play.
 
+## Сборка с основным API, 04.11.2026
+
+- Версия: `1.0.0`, Android versionCode: `3`, Expo SDK: `58`.
+- API в EAS environment `production`: `https://vozhugo.ru/api/v1`.
+- Сборка: https://expo.dev/accounts/bboysquizs-team/projects/vojugo-mobile/builds/ffe56919-f46d-406c-934c-cb5efd4a1bc9
+- Профиль `production`, формат `.aab`, существующий ключ подписи.
+- Перед отправкой исправлен lock-файл зависимостей после перехода на Expo 58.
+  Проверки TypeScript, Expo Doctor, 21 тест восстановления пароля и локальная
+  упаковка Android прошли. В lint остаются прежние 14 ошибок и 8 предупреждений.
+- Запуск сборки не публикует приложение в Google Play. Готовность файла
+  проверять по статусу сборки в EAS.
+
 ## Первая техническая сборка, 02.11.2026
 
 - Версия: `1.0.0`, Android versionCode: `2`.
 - Сборка: https://expo.dev/accounts/bboysquizs-team/projects/vojugo-mobile/builds/ef171d8b-150a-4b27-8dce-cc364597b1a2
 - Для проверки процесса сборки временно сохранён существующий адрес API:
   `https://hip-acm-follows-final.trycloudflare.com/api/v1`.
-- Этот адрес задан в EAS environment `production`. Проверка соединения с компьютера
+- Этот адрес был задан в EAS environment `production`. Проверка соединения с компьютера
   завершилась тайм-аутом, актуальный адрес отложен до уточнения у backend.
 - Такая сборка предназначена для технической проверки. Работу входа, заявок
   и восстановления пароля нельзя подтвердить без доступного API.
